@@ -1,4 +1,10 @@
 # AppSSR
 
-Программа для быстрого доступа к ПО SSR и аналитическим таблицам Synology.
-Исходный код макета — в папке [`appssr/`](appssr/README.md).
+Каталог и менеджер программ SSR. Актуальная реализация — **C# / WPF**: [`AppSSR.Wpf/README.md`](AppSSR.Wpf/README.md).
+
+```bat
+dotnet restore AppSSR.sln
+dotnet run --project AppSSR.Wpf
+```
+
+Вход: `admin` / `admin`.

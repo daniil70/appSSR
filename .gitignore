@@ -1,6 +1,11 @@
-node_modules
-dist
-dist-electron
-release
+bin/
+obj/
+.vs/
+*.user
+*.suo
+appssr/node_modules/
+appssr/dist/
+appssr/dist-electron/
+appssr/release/
 *.log
 .DS_Store
