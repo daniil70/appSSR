@@ -439,12 +439,16 @@ a {
   align-self: stretch;
   gap: 4px;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 .tabs button {
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.85);
-  padding: 0 24px;
+  padding: 0 20px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   font-weight: 600;
@@ -488,11 +492,11 @@ a {
 
 .body {
   display: grid;
-  grid-template-columns: 196px 1fr;
+  grid-template-columns: 216px 1fr;
   min-height: 0;
 }
 .body.with-panel {
-  grid-template-columns: 196px 1fr 320px;
+  grid-template-columns: 216px 1fr 320px;
 }
 
 /* sidebar */
@@ -517,6 +521,7 @@ a {
   border-radius: 10px;
   color: #33415a;
   font-weight: 500;
+  white-space: nowrap;
 }
 .nav button:hover {
   background: #e4ebf5;
