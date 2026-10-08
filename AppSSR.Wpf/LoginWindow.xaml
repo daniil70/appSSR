@@ -1,0 +1,136 @@
+<Window x:Class="AppSSR.Wpf.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AppSSR" Height="640" Width="980" MinHeight="560" MinWidth="840"
+        WindowStartupLocation="CenterScreen" Background="White"
+        FontFamily="Segoe UI" FontSize="14">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="1.15*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <Border>
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+          <GradientStop Color="#0B2A5B" Offset="0"/>
+          <GradientStop Color="#164A9C" Offset="0.65"/>
+          <GradientStop Color="#2C8CFF" Offset="1"/>
+        </LinearGradientBrush>
+      </Border.Background>
+      <Grid>
+        <Path Fill="#22FFFFFF" Stretch="Fill" Data="M 80,420 L 280,220 L 480,420 L 280,620 Z" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="420" Height="420" Margin="0,0,-80,-80"/>
+        <StackPanel Margin="48">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Viewbox Width="34" Height="30">
+              <Canvas Width="34" Height="30">
+                <Path Data="M17,2 L32,28 H21.5 L17,19.5 L12.5,28 H2 Z" Fill="White"/>
+                <Path Data="M17,2 L24.5,15 H9.5 Z" Fill="#2C8CFF"/>
+              </Canvas>
+            </Viewbox>
+            <TextBlock Text="Алабуга" Foreground="White" FontSize="22" FontWeight="ExtraBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+          </StackPanel>
+          <TextBlock Text="AppSSR" Foreground="White" FontSize="40" FontWeight="Bold" Margin="0,40,0,8"/>
+          <TextBlock TextWrapping="Wrap" Foreground="#D9E6FF" FontSize="15" LineHeight="22"
+                     Text="Единая точка входа для установки, запуска и обновления программного обеспечения SSR и быстрого перехода к аналитическим таблицам Synology."/>
+          <StackPanel Margin="0,28,0,0">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+              <Border Width="26" Height="26" CornerRadius="8" Background="#29FFFFFF" Margin="0,0,10,0">
+                <TextBlock Text="↓" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="Установка программ из GitLab в одно действие" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+              <Border Width="26" Height="26" CornerRadius="8" Background="#29FFFFFF" Margin="0,0,10,0">
+                <TextBlock Text="↗" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="Запуск установленных и встроенных программ" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <Border Width="26" Height="26" CornerRadius="8" Background="#29FFFFFF" Margin="0,0,10,0">
+                <TextBlock Text="▦" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="Ссылки на таблицы с аналитикой в Synology" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+          </StackPanel>
+          <TextBlock Text="Макет без БД · WPF · v0.2" Foreground="#88FFFFFF" FontSize="12" Margin="0,48,0,0"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Background="#EEF3F9">
+      <Border Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" CornerRadius="18" Padding="32" BorderBrush="#DDE5EF" BorderThickness="1">
+        <StackPanel>
+          <TextBlock Text="{Binding ModeLabel}" FontSize="22" FontWeight="SemiBold"/>
+          <TextBlock Text="Без авторизации доступ к каталогу закрыт." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,16"/>
+
+          <Border Background="#F1F5FA" CornerRadius="10" Padding="4" Margin="0,0,0,16">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Button Content="Войти" Click="OnLoginTab">
+                <Button.Style>
+                  <Style TargetType="Button" BasedOn="{StaticResource Btn}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsRegister}" Value="False">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Button.Style>
+              </Button>
+              <Button Grid.Column="1" Content="Зарегистрироваться" Click="OnRegisterTab">
+                <Button.Style>
+                  <Style TargetType="Button" BasedOn="{StaticResource Btn}">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsRegister}" Value="True">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Button.Style>
+              </Button>
+            </Grid>
+          </Border>
+
+          <Border Background="#FDECEC" CornerRadius="8" Padding="8,8" Margin="0,0,0,12" Visibility="{Binding Error, Converter={StaticResource NullVis}}">
+            <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"/>
+          </Border>
+
+          <StackPanel Visibility="{Binding IsRegister, Converter={StaticResource Vis}}" Margin="0,0,0,10">
+            <TextBlock Text="Имя и фамилия" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+            <Border Style="{StaticResource FieldBox}">
+              <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0"/>
+            </Border>
+          </StackPanel>
+
+          <TextBlock Text="Логин" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+          <Border Style="{StaticResource FieldBox}" Margin="0,0,0,12">
+            <TextBox x:Name="LoginBox" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0"/>
+          </Border>
+          <TextBlock Text="Пароль" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,6"/>
+          <Border Style="{StaticResource FieldBox}" Margin="0,0,0,16">
+            <PasswordBox x:Name="PwdBox" PasswordChanged="OnPasswordChanged"/>
+          </Border>
+
+          <Button Content="{Binding SubmitLabel}" Style="{StaticResource BtnPrimary}" Click="OnSubmit" Height="40"/>
+
+          <Border Background="{StaticResource PrimaryLightBrush}" CornerRadius="10" Padding="10,10" Margin="0,16,0,0">
+            <TextBlock TextWrapping="Wrap" Foreground="#234A83" FontSize="13">
+              Демо-доступ администратора: <Run FontFamily="Consolas" FontWeight="SemiBold">admin</Run> / <Run FontFamily="Consolas" FontWeight="SemiBold">admin</Run>
+            </TextBlock>
+          </Border>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</Window>

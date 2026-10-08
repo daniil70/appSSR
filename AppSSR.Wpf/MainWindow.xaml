@@ -1,0 +1,516 @@
+<Window x:Class="AppSSR.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:AppSSR.Wpf"
+        xmlns:ctrl="clr-namespace:AppSSR.Wpf.Controls"
+        xmlns:vm="clr-namespace:AppSSR.Wpf.ViewModels"
+        Title="AppSSR" Height="820" Width="1280" MinHeight="680" MinWidth="1024"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}"
+        FontFamily="Segoe UI" FontSize="14">
+  <Window.Resources>
+    <DataTemplate x:Key="ProgramCard">
+      <Border MouseLeftButtonUp="OnCardMouseUp">
+        <Border.Style>
+          <Style TargetType="Border" BasedOn="{StaticResource Card}">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="BorderBrush" Value="#2C8CFF"/>
+                <Setter Property="Background" Value="#F3F8FF"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <Grid>
+          <StackPanel>
+            <ctrl:AppIcon Icon="{Binding Item.Icon}" Color="{Binding Item.Color}" Size="48"/>
+            <TextBlock Text="{Binding Item.Name}" FontWeight="Bold" FontSize="15" Margin="0,8,0,4"/>
+            <Border Margin="0,0,0,6">
+              <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource Chip}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding ChipKind}" Value="green"><Setter Property="Background" Value="#E3F6EC"/></DataTrigger>
+                    <DataTrigger Binding="{Binding ChipKind}" Value="amber"><Setter Property="Background" Value="#FEF3DC"/></DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Border.Style>
+              <TextBlock Text="{Binding ChipText}" FontSize="11.5" FontWeight="SemiBold" Foreground="#2353A0">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="#2353A0"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding ChipKind}" Value="green"><Setter Property="Foreground" Value="#157347"/></DataTrigger>
+                      <DataTrigger Binding="{Binding ChipKind}" Value="amber"><Setter Property="Foreground" Value="#A85D00"/></DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </Border>
+            <TextBlock Text="{Binding Item.ShortDescription}" Foreground="{StaticResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" MaxHeight="40" Margin="0,0,0,10"/>
+            <Button Content="{Binding ActionLabel}" Command="{Binding ActionCommand}" IsEnabled="{Binding ActionEnabled}" HorizontalAlignment="Left" MinWidth="112">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource BtnSoft}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding ActionKind}" Value="primary"><Setter Property="Background" Value="{StaticResource PrimaryBrush}"/><Setter Property="Foreground" Value="White"/></DataTrigger>
+                    <DataTrigger Binding="{Binding ActionKind}" Value="danger"><Setter Property="Background" Value="#FDECEC"/><Setter Property="Foreground" Value="{StaticResource DangerBrush}"/></DataTrigger>
+                    <DataTrigger Binding="{Binding ActionKind}" Value="outline"><Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#2B3A55"/><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/><Setter Property="BorderThickness" Value="1"/></DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Button Style="{StaticResource IconBtn}" Command="{Binding ToggleFavoriteCommand}" FontSize="16" Width="28" Height="28">
+              <TextBlock>
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Text" Value="☆"/>
+                    <Setter Property="Foreground" Value="#C0C9D8"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                        <Setter Property="Text" Value="★"/>
+                        <Setter Property="Foreground" Value="#F2B01E"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </Button>
+            <Button Style="{StaticResource IconBtn}" Click="OnCardMenu" Content="⋯" FontSize="16" Width="28" Height="28">
+              <Button.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Удалить программу" Command="{Binding RemoveInstallCommand}" Visibility="{Binding ShowRemove, Converter={StaticResource Vis}}"/>
+                  <MenuItem Header="Редактировать карточку" Command="{Binding EditCommand}" Visibility="{Binding CanEdit, Converter={StaticResource Vis}}"/>
+                  <MenuItem Header="Удалить из каталога" Command="{Binding DeleteFromCatalogCommand}" Visibility="{Binding CanEdit, Converter={StaticResource Vis}}"/>
+                </ContextMenu>
+              </Button.ContextMenu>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TableCard">
+      <Border MouseLeftButtonUp="OnCardMouseUp">
+        <Border.Style>
+          <Style TargetType="Border" BasedOn="{StaticResource Card}">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="BorderBrush" Value="#2C8CFF"/>
+                <Setter Property="Background" Value="#F3F8FF"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <Grid>
+          <StackPanel>
+            <ctrl:AppIcon Icon="Table" Color="#0e8c8c" Size="48"/>
+            <TextBlock Text="{Binding Item.Name}" FontWeight="Bold" FontSize="15" Margin="0,8,0,4"/>
+            <Border Style="{StaticResource Chip}" Background="#E3F6EC" Margin="0,0,0,6">
+              <TextBlock Text="Таблица" FontSize="11.5" FontWeight="SemiBold" Foreground="#157347"/>
+            </Border>
+            <TextBlock Text="{Binding Item.Description}" Foreground="{StaticResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" MaxHeight="40" Margin="0,0,0,10"/>
+            <Button Content="Открыть" Command="{Binding OpenCommand}" Style="{StaticResource BtnPrimary}" HorizontalAlignment="Left" MinWidth="112"/>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Button Style="{StaticResource IconBtn}" Command="{Binding ToggleFavoriteCommand}" FontSize="16" Width="28" Height="28">
+              <TextBlock>
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Text" Value="☆"/>
+                    <Setter Property="Foreground" Value="#C0C9D8"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                        <Setter Property="Text" Value="★"/>
+                        <Setter Property="Foreground" Value="#F2B01E"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </Button>
+            <Button Style="{StaticResource IconBtn}" Click="OnCardMenu" Content="⋯" Width="28" Height="28" Visibility="{Binding CanEdit, Converter={StaticResource Vis}}">
+              <Button.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Редактировать ссылку" Command="{Binding EditCommand}"/>
+                  <MenuItem Header="Удалить таблицу" Command="{Binding DeleteCommand}"/>
+                </ContextMenu>
+              </Button.ContextMenu>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <local:CardTemplateSelector x:Key="CardSelector" ProgramTemplate="{StaticResource ProgramCard}" TableTemplate="{StaticResource TableCard}"/>
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="64"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Top bar: user + search, без вкладок категорий -->
+    <Border Grid.Row="0">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+          <GradientStop Color="#0B2A5B" Offset="0"/>
+          <GradientStop Color="#164A9C" Offset="1"/>
+        </LinearGradientBrush>
+      </Border.Background>
+      <Grid Margin="16,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Border Background="#1AFFFFFF" CornerRadius="12" Padding="6,6,8,6" BorderBrush="#24FFFFFF" BorderThickness="1">
+          <StackPanel Orientation="Horizontal">
+            <Border Width="34" Height="34" CornerRadius="17" Background="#3B9BFF" Margin="0,0,10,0">
+              <TextBlock Text="{Binding CurrentUser.Initials}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+              <TextBlock Text="{Binding CurrentUser.DisplayName}" Foreground="White" FontWeight="SemiBold" FontSize="14"/>
+              <TextBlock Text="{Binding CurrentUser.RoleLabel}" Foreground="#CCFFFFFF" FontSize="11.5"/>
+            </StackPanel>
+            <Button Content="Выйти" Command="{Binding LogoutCommand}" Background="#2C8CFF" Foreground="White" Style="{StaticResource Btn}" Padding="12,7" FontSize="13"/>
+          </StackPanel>
+        </Border>
+        <TextBlock Grid.Column="1" Text="AppSSR" Foreground="White" FontWeight="SemiBold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.9"/>
+        <Border Grid.Column="2" Background="#1FFFFFFF" CornerRadius="10" Padding="12,0" Height="36" Width="240" BorderBrush="#2EFFFFFF" BorderThickness="1">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Style="{StaticResource IconBtn}" Foreground="White" Content="✕" Width="22" Height="22" Command="{Binding ClearSearchCommand}" Visibility="{Binding Search, Converter={StaticResource NullVis}}"/>
+            <TextBlock DockPanel.Dock="Left" Text="⌕" Foreground="#AAFFFFFF" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" Foreground="White" CaretBrush="White" BorderThickness="0" VerticalAlignment="Center">
+              <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                  <Style.Resources>
+                    <Style TargetType="Border"><Setter Property="BorderThickness" Value="0"/></Style>
+                  </Style.Resources>
+                </Style>
+              </TextBox.Style>
+            </TextBox>
+          </DockPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="216"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- Decorative diamonds -->
+      <Canvas Grid.ColumnSpan="3" IsHitTestVisible="False" ClipToBounds="True">
+        <Border Width="520" Height="520" CornerRadius="90" RenderTransformOrigin="0.5,0.5" Canvas.Left="-240" Canvas.Bottom="-260">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+              <GradientStop Color="#291769E0" Offset="0"/>
+              <GradientStop Color="#051769E0" Offset="1"/>
+            </LinearGradientBrush>
+          </Border.Background>
+          <Border.RenderTransform>
+            <RotateTransform Angle="45"/>
+          </Border.RenderTransform>
+        </Border>
+      </Canvas>
+
+      <!-- Sidebar -->
+      <DockPanel Margin="10,18,8,12">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="12,0,0,4">
+          <Viewbox Width="28" Height="24">
+            <Canvas Width="34" Height="30">
+              <Path Data="M17,2 L32,28 H21.5 L17,19.5 L12.5,28 H2 Z" Fill="#0D3B8A"/>
+              <Path Data="M17,2 L24.5,15 H9.5 Z" Fill="#2C8CFF"/>
+            </Canvas>
+          </Viewbox>
+          <TextBlock Text="Алабуга" FontSize="20" FontWeight="ExtraBold" Foreground="#0D3B8A" Margin="8,0,0,0" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel>
+          <Button Command="{Binding GoAllCommand}" Margin="0,0,0,2">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource NavBtn}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Page}" Value="All"><Setter Property="Background" Value="#DBE7F8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="9" Padding="7,1" Margin="8,0,0,0">
+                <TextBlock Text="{Binding CountAll}" FontSize="11.5" Foreground="{StaticResource MutedBrush}"/>
+              </Border>
+              <TextBlock Text="▦  Все приложения" VerticalAlignment="Center"/>
+            </DockPanel>
+          </Button>
+          <Button Command="{Binding GoInstalledCommand}" Margin="0,0,0,2">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource NavBtn}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Page}" Value="Installed"><Setter Property="Background" Value="#DBE7F8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="9" Padding="7,1" Margin="8,0,0,0">
+                <TextBlock Text="{Binding CountInstalled}" FontSize="11.5" Foreground="{StaticResource MutedBrush}"/>
+              </Border>
+              <TextBlock Text="↓  Установленные" VerticalAlignment="Center"/>
+            </DockPanel>
+          </Button>
+          <Button Command="{Binding GoFavoritesCommand}" Margin="0,0,0,2">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource NavBtn}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Page}" Value="Favorites"><Setter Property="Background" Value="#DBE7F8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <TextBlock Text="☆  Избранное" VerticalAlignment="Center"/>
+          </Button>
+          <Button Command="{Binding GoTablesCommand}" Margin="0,0,0,2">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource NavBtn}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Page}" Value="Tables"><Setter Property="Background" Value="#DBE7F8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="9" Padding="7,1" Margin="8,0,0,0">
+                <TextBlock Text="{Binding CountTables}" FontSize="11.5" Foreground="{StaticResource MutedBrush}"/>
+              </Border>
+              <TextBlock Text="▦  Таблицы" VerticalAlignment="Center"/>
+            </DockPanel>
+          </Button>
+          <Button Command="{Binding GoSettingsCommand}" Margin="0,8,0,2">
+            <Button.Style>
+              <Style TargetType="Button" BasedOn="{StaticResource NavBtn}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Page}" Value="Settings"><Setter Property="Background" Value="#DBE7F8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Button.Style>
+            <TextBlock Text="⚙  Настройки" VerticalAlignment="Center"/>
+          </Button>
+        </StackPanel>
+      </DockPanel>
+
+      <!-- Content -->
+      <Grid Grid.Column="1" Margin="12,18,20,20">
+        <DockPanel Visibility="{Binding IsSettings, Converter={StaticResource InvVis}}">
+          <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+              <Button Content="+ Добавить ПО" Command="{Binding AddProgramCommand}" Style="{StaticResource BtnPrimary}" Margin="0,0,10,0" Visibility="{Binding ShowAddProgram, Converter={StaticResource Vis}}"/>
+              <Button Content="+ Добавить таблицу" Command="{Binding AddTableCommand}" Style="{StaticResource BtnPrimary}" Visibility="{Binding ShowAddTable, Converter={StaticResource Vis}}"/>
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="SemiBold"/>
+              <TextBlock Text="{Binding Subtitle}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+          </DockPanel>
+          <ItemsControl ItemsSource="{Binding VisibleItems}" ItemTemplateSelector="{StaticResource CardSelector}" Visibility="{Binding HasVisibleItems, Converter={StaticResource Vis}}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
+        </DockPanel>
+
+        <TextBlock Text="{Binding EmptyText}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" FontSize="16"
+                   Visibility="{Binding ShowEmpty, Converter={StaticResource Vis}}"/>
+
+        <!-- Settings -->
+        <ScrollViewer Visibility="{Binding IsSettings, Converter={StaticResource Vis}}" VerticalScrollBarVisibility="Auto">
+          <StackPanel DataContext="{Binding Settings}" MaxWidth="880" HorizontalAlignment="Left">
+            <TextBlock Text="Настройки" FontSize="26" FontWeight="SemiBold"/>
+            <TextBlock Text="Папка установки, пользователи и права." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,16"/>
+            <Border Background="White" CornerRadius="14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Папка установки" FontWeight="SemiBold" FontSize="16"/>
+                <TextBlock Text="Внешние программы устанавливаются в подпапки этой папки. Команды установки выполняются в ней через cmd." Foreground="{StaticResource MutedBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,4,0,12"/>
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Content="Сохранить" Style="{StaticResource BtnPrimary}" Command="{Binding SaveSettingsCommand}" Margin="10,0,0,0" IsEnabled="{Binding CanSaveSettings}"/>
+                  <Button DockPanel.Dock="Right" Content="Выбрать" Style="{StaticResource BtnOutline}" Command="{Binding BrowseFolderCommand}" Margin="10,0,0,0" Visibility="{Binding IsAdmin, Converter={StaticResource Vis}}"/>
+                  <Border Style="{StaticResource FieldBox}">
+                    <TextBox Text="{Binding AppsRoot, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas" IsEnabled="{Binding IsAdmin}"/>
+                  </Border>
+                </DockPanel>
+              </StackPanel>
+            </Border>
+            <Border Background="White" CornerRadius="14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20" Margin="0,0,0,16" Visibility="{Binding IsAdmin, Converter={StaticResource Vis}}">
+              <StackPanel>
+                <TextBlock Text="Пользователи и права" FontWeight="SemiBold" FontSize="16"/>
+                <TextBlock Text="Администратор может выдавать и отзывать право добавлять ПО и таблицы в каталог." Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="0,4,0,12"/>
+                <ItemsControl ItemsSource="{Binding Users}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="2*"/>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="1.4*"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding User.DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding User.Login}" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="2" SelectedIndex="{Binding RoleIndex}" IsEnabled="{Binding CanChangeRole}" Margin="0,0,12,0">
+                          <ComboBoxItem Content="Пользователь"/>
+                          <ComboBoxItem Content="Администратор"/>
+                        </ComboBox>
+                        <CheckBox Grid.Column="3" Content="Каталог" IsChecked="{Binding ManageCatalog}" IsEnabled="{Binding IsBuiltInAdmin, Converter={StaticResource Not}}" VerticalAlignment="Center"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+            <Border Background="White" CornerRadius="14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20" Margin="0,0,0,16" Visibility="{Binding IsAdmin, Converter={StaticResource Vis}}">
+              <StackPanel>
+                <TextBlock Text="Журнал изменений каталога" FontWeight="SemiBold" FontSize="16"/>
+                <ItemsControl ItemsSource="{Binding Audit}" Margin="0,10,0,0">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Margin="0,0,0,6">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding User}" FontWeight="SemiBold" Width="90"/>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding At}" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding Action}" Margin="8,0"/>
+                        <TextBlock Text="{Binding Target}" Foreground="{StaticResource MutedBrush}" Margin="8,0"/>
+                      </DockPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+            <Border Background="White" CornerRadius="14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20">
+              <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}">
+                AppSSR v0.2 — макет без базы данных на C# / WPF. Данные хранятся локально в JSON-файле, пароли — только в виде хэшей с солью.
+              </TextBlock>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- Details panel -->
+      <Border Grid.Column="2" Width="320" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0" Visibility="{Binding PanelOpen, Converter={StaticResource Vis}}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,18">
+          <StackPanel>
+            <Button Content="✕" Style="{StaticResource IconBtn}" HorizontalAlignment="Right" Command="{Binding ClosePanelCommand}"/>
+            <!-- Program panel -->
+            <StackPanel DataContext="{Binding SelectedProgram}" Visibility="{Binding Converter={StaticResource NullVis}}">
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                <ctrl:AppIcon Icon="{Binding Item.Icon}" Color="{Binding Item.Color}" Size="72"/>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Item.Name}" FontSize="19" FontWeight="SemiBold"/>
+                  <Border Style="{StaticResource Chip}" Margin="0,6,0,0">
+                    <TextBlock Text="{Binding StateLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="#2353A0"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+              <Button Content="{Binding ActionLabel}" Command="{Binding ActionCommand}" IsEnabled="{Binding ActionEnabled}" Margin="0,0,0,8">
+                <Button.Style>
+                  <Style TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding ActionKind}" Value="soft"><Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/><Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/></DataTrigger>
+                      <DataTrigger Binding="{Binding ActionKind}" Value="danger"><Setter Property="Background" Value="#FDECEC"/><Setter Property="Foreground" Value="{StaticResource DangerBrush}"/></DataTrigger>
+                      <DataTrigger Binding="{Binding ActionKind}" Value="outline"><Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#2B3A55"/><Setter Property="BorderThickness" Value="1"/><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/></DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Button.Style>
+              </Button>
+              <Button Content="Удалить" Command="{Binding RemoveInstallCommand}" Style="{StaticResource BtnOutline}" Margin="0,0,0,8" Visibility="{Binding ShowRemove, Converter={StaticResource Vis}}"/>
+              <Button Content="Редактировать карточку" Command="{Binding EditCommand}" Style="{StaticResource BtnGhost}" Visibility="{Binding CanEdit, Converter={StaticResource Vis}}"/>
+              <Border Background="#FDECEC" CornerRadius="10" Padding="10" Margin="0,10,0,0" Visibility="{Binding Status.Error, Converter={StaticResource NullVis}}">
+                <TextBlock Text="{Binding Status.Error}" Foreground="#8F2525" TextWrapping="Wrap" FontSize="13"/>
+              </Border>
+              <TextBlock Text="Вывод команды" FontWeight="SemiBold" Margin="0,16,0,6" Visibility="{Binding Log, Converter={StaticResource NullVis}}"/>
+              <Border Background="#0F1B33" CornerRadius="10" Padding="10" MaxHeight="160" Visibility="{Binding Log, Converter={StaticResource NullVis}}">
+                <ScrollViewer>
+                  <TextBox Text="{Binding Log, Mode=OneWay}" Foreground="#D7E5FF" Background="Transparent" BorderThickness="0" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" IsReadOnly="True"/>
+                </ScrollViewer>
+              </Border>
+              <TextBlock Text="О программе" FontWeight="SemiBold" Margin="0,16,0,6"/>
+              <TextBlock Text="{Binding Item.Description}" TextWrapping="Wrap" FontSize="13.5" LineHeight="20"/>
+              <TextBlock Text="Основные возможности" FontWeight="SemiBold" Margin="0,16,0,6"/>
+              <ItemsControl ItemsSource="{Binding Item.Features}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                      <TextBlock Text="✓" Foreground="{StaticResource SuccessBrush}" FontWeight="Bold" Margin="0,0,8,0"/>
+                      <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="Установка" FontWeight="SemiBold" Margin="0,16,0,6"/>
+              <Border Background="#0F1B33" CornerRadius="10" Padding="10">
+                <TextBlock Text="{Binding Item.InstallCommand}" Foreground="#D7E5FF" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+              </Border>
+              <Border BorderBrush="#EDF1F6" BorderThickness="0,1,0,0" Margin="0,16,0,0" Padding="0,6,0,0">
+                <StackPanel>
+                  <DockPanel Margin="0,8"><TextBlock Text="Версия" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding Item.Version}" HorizontalAlignment="Right"/></DockPanel>
+                  <DockPanel Margin="0,8"><TextBlock Text="Разработчик" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding Item.Developer}" HorizontalAlignment="Right"/></DockPanel>
+                  <DockPanel Margin="0,8"><TextBlock Text="Тип" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="Внешняя (GitLab)" HorizontalAlignment="Right"/></DockPanel>
+                  <DockPanel Margin="0,8"><TextBlock Text="Папка" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding Status.ResolvedDir}" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right" MaxWidth="180"/></DockPanel>
+                  <DockPanel Margin="0,8"><TextBlock Text="Исполняемый файл" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding Item.ExePath}" HorizontalAlignment="Right"/></DockPanel>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+
+            <!-- Table panel -->
+            <StackPanel DataContext="{Binding SelectedTable}" Visibility="{Binding Converter={StaticResource NullVis}}">
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                <ctrl:AppIcon Icon="Table" Color="#0e8c8c" Size="72"/>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Item.Name}" FontSize="19" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <Border Style="{StaticResource Chip}" Background="#E3F6EC" Margin="0,6,0,0">
+                    <TextBlock Text="Таблица" FontSize="11.5" FontWeight="SemiBold" Foreground="#157347"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+              <Button Content="Открыть в браузере" Command="{Binding OpenCommand}" Style="{StaticResource BtnPrimary}" Margin="0,0,0,8"/>
+              <Grid Visibility="{Binding CanEdit, Converter={StaticResource Vis}}" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition/>
+                  <ColumnDefinition Width="8"/>
+                  <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Изменить" Command="{Binding EditCommand}" Style="{StaticResource BtnOutline}"/>
+                <Button Grid.Column="2" Content="Удалить" Command="{Binding DeleteCommand}" Style="{StaticResource BtnDanger}"/>
+              </Grid>
+              <TextBlock Text="Описание" FontWeight="SemiBold" Margin="0,8,0,6"/>
+              <TextBlock Text="{Binding Item.Description}" TextWrapping="Wrap"/>
+              <TextBlock Text="Ссылка" FontWeight="SemiBold" Margin="0,16,0,6"/>
+              <Border Background="#0F1B33" CornerRadius="10" Padding="10">
+                <TextBlock Text="{Binding Item.Url}" Foreground="#D7E5FF" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+              </Border>
+              <DockPanel Margin="0,16,0,0"><TextBlock Text="Добавил" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding Item.CreatedBy}" HorizontalAlignment="Right"/></DockPanel>
+              <DockPanel Margin="0,8,0,0"><TextBlock Text="Дата добавления" Foreground="{StaticResource MutedBrush}"/><TextBlock Text="{Binding AddedLabel}" HorizontalAlignment="Right"/></DockPanel>
+              <Border Background="{StaticResource PrimaryLightBrush}" CornerRadius="10" Padding="10" Margin="0,16,0,0">
+                <TextBlock Text="Авторизация в Synology выполняется средствами самого Synology." TextWrapping="Wrap" Foreground="#234A83" FontSize="13"/>
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <!-- Toast -->
+    <Border Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" CornerRadius="12" Padding="12,12" MaxWidth="420"
+            Visibility="{Binding Toast, Converter={StaticResource NullVis}}">
+      <Border.Style>
+        <Style TargetType="Border">
+          <Setter Property="Background" Value="#15233A"/>
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding ToastKind}" Value="error"><Setter Property="Background" Value="#A92F2F"/></DataTrigger>
+            <DataTrigger Binding="{Binding ToastKind}" Value="success"><Setter Property="Background" Value="#157347"/></DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+      <TextBlock Text="{Binding Toast}" Foreground="White" TextWrapping="Wrap"/>
+    </Border>
+  </Grid>
+</Window>

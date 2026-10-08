@@ -1,0 +1,11 @@
+<UserControl x:Class="AppSSR.Wpf.Controls.AppIcon"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Size, RelativeSource={RelativeSource Self}}"
+             Height="{Binding Size, RelativeSource={RelativeSource Self}}">
+  <Border x:Name="Bg" CornerRadius="11">
+    <Viewbox Margin="10">
+      <Path x:Name="Glyph" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Width="24" Height="24" Stretch="Uniform"/>
+    </Viewbox>
+  </Border>
+</UserControl>
